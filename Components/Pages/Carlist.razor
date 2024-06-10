@@ -1,0 +1,115 @@
+﻿@page "/industrial"
+@using BlazorIndustrialApp.Models
+@using System.Timers
+
+<h3>Todo List - Cars</h3>
+
+<label>Titel:</label>
+<input @bind="newCarTitle" placeholder="Title" />
+
+<label>Model:</label>
+<input @bind="newCarModel" placeholder="Model" />
+<button @onclick="AddCar">Add Car</button>
+
+<p style="margin-top:40px"> List of cars </p>
+
+<ul>
+    @foreach (var car in cars)
+    {
+        <li style="display: flex; align-items: center; gap: 10px; margin-top:20px;">
+            <label style="margin: 0px; margin-left: -33px;">Status:</label>
+            <p style="margin: 0px; margin-left: -7px; margin-right: 50px;">
+                @(car.IsStarted ? "Online" : "Offline")
+            </p>
+
+            <label style="margin: 0px; margin-left: -33px;">Time:</label>
+            @* <p style="margin: 0px; margin-left: -7px; margin-right: 50px;">
+                @car.ElapsedTime.ToString(@"hh\:mm\:ss")
+            </p> *@
+            <p style="margin: 0px; margin-left: 10px;">@car.ElapsedTime</p>
+
+            <label style="margin: 0px; margin-left: 10px;">Titel:</label>
+
+            @if (car.IsToggled)
+            {
+                <p style="margin: 0px; margin-left: -7px; margin-right: 50px;">@car.Title</p>
+                <label>Model:</label>
+                <p style="margin: 0px; margin-left: -7px; margin-right: 50px;">@car.Model</p>
+            }
+            else
+            {
+                <input style="margin-left: -7px;" @bind="car.Title" />
+                <label>Model:</label>
+                <input style="margin-left: -7px;" @bind="car.Model" />
+            }
+
+            <button class="btn btn-primary" style="background-color: @(car.IsToggled ? "" : "green");" @onclick="() => Toggle(car)">
+                @(car.IsToggled ? "Update" : "Lock")
+            </button>
+
+            <button class="btn btn-primary" style="background-color: @(car.IsStarted ? "red" : "green"); color: white;" @onclick="() => ToggleStatus(car)">
+                @(car.IsStarted ? "Stop" : "Start")
+            </button>
+            <button class="btn btn-primary" style="background-color:orange" @onclick="() => ResetTimer(car)">
+                Reset Timer
+            </button>
+            <button class="btn btn-primary" style="background-color:red" @onclick="() => RemoveCar(car)">Remove</button>
+           
+        </li>
+    }
+</ul>
+
+@code {
+    private string ?newCarTitle;
+    private string ?newCarModel;
+    private List<Car> cars = new List<Car>();
+
+    private void AddCar()
+    {
+        if (!string.IsNullOrWhiteSpace(newCarTitle) && !string.IsNullOrWhiteSpace(newCarModel))
+        {
+            cars.Add(new Car { Title = newCarTitle, Model = newCarModel, IsToggled = true });
+        }
+    }
+
+    private void RemoveCar(Car car)
+    {
+      
+        cars.Remove(car);
+    }
+
+    private void Toggle(Car car)
+    {
+        car.IsToggled = !car.IsToggled;
+    }
+
+    private void ToggleStatus(Car car)
+    {
+        car.IsStarted = !car.IsStarted;
+        if (car.IsStarted)
+        {
+            if (car.Timer == null)
+            {
+                car.Timer = new Timer(1000); // Tick every second
+                car.Timer.Elapsed += (sender, e) => UpdateTime(car);
+                car.Timer.AutoReset = true;
+            }
+            car.Timer.Start();
+        }
+        else
+        {
+            car.Timer?.Stop();
+        }
+    }
+
+    private void ResetTimer(Car car)
+    {
+        car.ElapsedTime = TimeSpan.Zero;
+    }
+
+    private void UpdateTime(Car car)
+    {
+        car.ElapsedTime = car.ElapsedTime.Add(TimeSpan.FromSeconds(1));
+        InvokeAsync(StateHasChanged);
+    }
+}

@@ -1,0 +1,35 @@
+﻿
+@using BlazorIndustrialApp.Models
+
+<h3>Statistics</h3>
+
+<p>Total number of cars: @(Cars?.Count > 0 ? Cars.Count.ToString() : "No cars added")</p>
+<p>Last added car: @GetLastAddedCarTitle()</p>
+
+<p>Number of cars online: @GetNumberOfCarsOnline() "</p>
+
+@code {
+    [Parameter]
+    public List<Car> ?Cars { get; set; }
+
+
+    private string GetLastAddedCarTitle()
+    {
+        if (Cars != null && Cars.Count > 0)
+        {
+            // Assuming cars are sorted based on the last edited time
+            var lastAddedCar = Cars.Last();
+            return lastAddedCar.Title + " " + lastAddedCar.Model;
+        }
+        return "No Car Added";
+    }
+
+
+    private string GetNumberOfCarsOnline()
+    {
+        var count = Cars?.Count(car => car.IsStarted) ?? 0;
+        return count > 0 ? count.ToString() : "None cars online";
+    }
+
+    
+}

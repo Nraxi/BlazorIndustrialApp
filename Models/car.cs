@@ -12,5 +12,6 @@ namespace BlazorIndustrialApp.Models
         public TimeSpan ElapsedTime { get; set; } = TimeSpan.Zero;
         public System.Timers.Timer ?Timer { get; set; }
 
+      
     }
 }
